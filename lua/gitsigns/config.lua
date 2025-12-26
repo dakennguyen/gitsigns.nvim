@@ -874,6 +874,15 @@ local function warn(s, ...)
   vim.notify(s:format(...), vim.log.levels.WARN, { title = 'gitsigns' })
 end
 
+local function validate(k, v, ty)
+  if vim.fn.has('nvim-0.11') == 1 then
+    --- @diagnostic disable-next-line: redundant-parameter,param-type-mismatch
+    vim.validate(k, v, ty)
+  else
+    vim.validate({ [k] = { v, ty } })
+  end
+end
+
 --- @param config Gitsigns.Config
 local function validate_config(config)
   --- @diagnostic disable-next-line:no-unknown
@@ -883,9 +892,7 @@ local function validate_config(config)
       warn("gitsigns: Ignoring invalid configuration field '%s'", k)
     elseif kschema.type then
       if type(kschema.type) == 'string' then
-        vim.validate({
-          [k] = { v, kschema.type },
-        })
+        validate(k, v, kschema.type)
       end
     end
   end
